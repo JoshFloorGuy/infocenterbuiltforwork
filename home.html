@@ -1,0 +1,685 @@
+<html>
+            <head>
+                        <title>Info Center</title>
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+            </head>
+            <body style="margin:0px;padding:0px;overflow:hidden">
+                        <div id="boddo" style="height:96%;width:100%;overflow:auto;position:absolute;float:left;display:inline-block">
+                        <div id="window0subsub" style="padding-left:10px">
+                        <h1>Info Center</h1>
+                        <p>Find information on many different things</p>
+                        <a href="javascript:openSite(null,'Timeclock')">Clock in</a><br><a href="javascript:openSite(null,'Outlook')">Email</a><br><a href="javascript:openSite()">Snack Cart Schedule</a>
+                        <br><br><a href="javascript:newWindow()">New research notes window</a><p style="display:inline"> <input type="checkbox" id="includePreset" checked><a style="color:black;text-decoration:none" href="javascript:sw('includePreset')">Include note structure preset</a></p>
+                        <br><a href="javascript:var www = window.prompt('Insert url here:');if(www!==null){openSite(www)}">Open a new window from url</a><br><a id="toggleInfo" href="javascript:newWindow(null,null,true)">Move body to window<br></a>
+                        <br><p id="dimLid">Load a text file to a note <input type="file" accept=".txt" id="lodFile" onchange="javascript:loadFileAsNote()"></p>
+                        <p><input type="checkbox" id="newTab" checked><a style="color:black;text-decoration:none" href="javascript:sw('newTab')">Open links in a new tab (NOTE: if off, some websites won't load!)</a></p>
+                        <a href="javascript:toggle('auth')" style="text-decoration:none;color:black"><h2>Authorities and Regulators</h2></a>
+                        <div id="auth" style="display:none">
+                                    <h3>Search SEC by <a id="ssec" href="javascript:switchSEC()">company</a></h3>
+                                    <input type="text" id="SECs"><button onclick="searchSEC()">Search</button><br>
+                                    <h3>SOS sites: <select id="SOS"><option value="">Select an Item</option></select></h3>
+                        </div>
+                        <a href="javascript:toggle('reg')" style="text-decoration:none;color:black"><h2>Registers</h2></a>
+                        <div id="reg" style="display:none">
+                        </div>
+                        <a href="javascript:toggle('exch')" style="text-decoration:none;color:black"><h2>Exchanges</h2></a>
+                        <div id="exch" style="display:none">
+                        </div>
+                        <a href="javascript:toggle('dnb')" style="text-decoration:none;color:black"><h2>D&B</h2></a>
+                        <div id="dnb" style="display:none">
+                                    <h3>DUNS</h3>
+                                    <input type="text" id="searchD"><button onclick="searchDUNS()">Search</button>
+                                    <h3>Company Names</h3>
+                                    <input type="text" id="searchC"><button onclick="searchCompH()">Search</button>
+                        </div>
+                        <a href="javascript:toggle('google')" style="text-decoration:none;color:black"><h2>Google</h2></a>
+                        <div id="google" style="display:none">
+                                    <h3><a href="javascript:openSite('https://translate.google.com')">Translate</a> <a id="Trans" href="javascript:switchTrans()">to</a> <select id="tranS"></select></h3>
+                                    <input type="text" id="translate"><button onclick="Translate()">Translate</button>
+                                    <h3>Google Maps</h3>
+                                    <input type="text" id="GugleMip"><button onclick="googleMap()">Search</button>
+                        </div>
+                        </div>
+                        </div>
+                        <div id="backmask" style="position:fixed;height:100%;width:100%;bottom:0;left:0;background-color:rgba(0,0,0,0);z-index:6;display:none"></div>
+                        <div id="prevmask" style="position:fixed;height:100%;width:100%;top:0;left:0;background-color:rgba(0,0,0,0.1);z-index:14;display:none"></div>
+                        <div id="taskbar" style="position:fixed;height:4%;width:100%;bottom:0;left:0;background-color:#000000;overflow-y:hidden"></div>
+                        <script>
+                                    var nums = ['0','1','2','3','4','5','6','7','8','9']
+                                    var add = [
+                                                ['auth',"http://www.ffiec.gov/nicpubweb/nicweb/SearchForm.aspx",'FFIEC'],
+                                                ['auth',"http://adviserinfo.sec.gov/(S(44r2byz2mz05lkvzc3uwucao))/IAPD/Content/Search/iapd_Search.aspx",'IAPD'],
+                                                ['auth',"https://beta.companieshouse.gov.uk/",'Companies House'],
+                                                ['auth',"http://sedar.com/issuers/issuers_en.htm",'SEDAR'],
+                                                ['auth',"http://brokercheck.finra.org/Search/Search.aspx",'FINRA'],
+                                                ['auth',"https://research.fdic.gov/bankfind/",'FDIC'],
+                                                ['auth',"http://emma.msrb.org/",'EMMA'],
+                                                ['auth',"http://www.nfa.futures.org/basicnet/",'NFA'],
+                                                ['auth',"https://register.fca.org.uk/",'Financial Conduct Authority'],
+                                                ['auth',"https://www.fundsquare.net/homepage",'Fundsquare'],
+                                                ['auth',"http://www.nccs.urban.org/",'NCCS'],
+                                                ['reg',"https://www.ic.gc.ca/app/scr/cc/CorporationsCanada/fdrlCrpSrch.html?locale=en_CA",'Canada'],
+                                                ['reg',"http://www.abr.business.gov.au/",'Australia'],
+                                                ['reg',"https://search.cro.ie/company/",'Ireland'],
+                                                ['reg',"https://www.handelsregister.de/rp_web/mask.do;jsessionid=82726E08332F52773FB40D3A995B0D29.tc05n01?Typ=n",'Germany'],
+                                                ['reg',"https://www.kvk.nl/",'Netherlands'],
+                                                ['reg',"http://www.societe.com/index_entrep.html",'France'],
+                                                ['reg',"https://www.rcsl.lu/mjrcs/jsp/IndexActionNotSecured.action?time=1417030370163&loop=1",'Luxemborg'],
+                                                ['reg',"https://www.icris.cr.gov.hk/csci/",'Hong Kong'],
+                                                ['reg',"http://www.largestcompanies.com/",'Norway/Finland/Sweden'],
+                                                ['reg',"https://www.zefix.ch/en/search/entity/welcome",'Switzerland'],
+                                                ['reg',"http://www.infoimprese.it/impr/index.jsp",'Italy'],
+                                                ['reg',"http://www.eurodb.be/scriptsPublic/arianeweb.dll/e/m_mkt_rech",'Belgium'],
+                                                ['reg',"https://companies-register.companiesoffice.govt.nz/",'New Zealand'],
+                                                ['reg',"https://datacvr.virk.dk/data/?language=en-gb&",'Denmark'],
+                                                ['reg',"https://efiling.drcor.mcit.gov.cy/DrcorPublic/SearchForm.aspx?sc=1",'Cyprus'],
+                                                ['reg',"https://www.greg.gg/webCompSearch.aspx",'Guernsey'],
+                                                ['reg',"https://www.jerseyfsc.org/registry/documentsearch/NameSearch.aspx",'Jersey'],
+                                                ['reg',"https://ems.ms.gov.pl/krs/wyszukiwaniepodmiotu?t:lb=t",'Poland'],
+                                                ['reg',"http://www.guianet.pt/en/home?session=8614e607f5387027153043b5471abfb4&stab=1&versao=2",'Portugal'],
+                                                ['reg',"http://novascotia.ca/sns/access/business/registry-joint-stock-companies.asp",'Nova Scotia'],
+                                                ['reg',"https://www.tis.bizfile.gov.sg/ngbtisinternet/faces/directorySearch?_adf.ctrl-state=e5mdpoy4j_124&_afrLoop=51140532053175216&_afrWindowMode=0&_afrWindowId=null#%40%3F_afrWindowId%3Dnull%26_afrLoop%3D51140532053175216%26_afrWindowMode%3D0%26_adf.ctrl-state%3D12by64y5e6_4",'Singapore'],
+                                                ['exch',"http://www.ise.ie/","Irish Stock Exchange"],
+                                                ['exch',"http://www2.tse.or.jp/tseHpFront/JJK020010Action.do?Show=Show","Tokyo Stock Exchange"],
+                                                ['exch',"http://www.hkexnews.hk/listedco/listconews/advancedsearch/search_active_main.aspx","HKEX"],
+                                                ['exch',"http://www.londonstockexchange.com/home/homepage.htm","London Stock Exchange"],
+                                                ['exch',"https://www.asx.com.au/","Australian Securities Exchange - ASX"],
+                                                ['exch',"http://www.borsaitaliana.it/homepage/homepage.htm","Borsa Italiana"],
+                                                ['exch',"http://www.morningstar.com/","Morningstar"],
+                                                ['exch',"http://emops.twse.com.tw/server-java/t58query","Taiwan Exchange - MOPS"],
+                                                ['exch',"http://www.bmfbovespa.com.br/pt_br/produtos/listados-a-vista-e-derivativos/renda-variavel/empresas-listadas.htm","Brazil Exchange - BMF BOVESPA"],
+                                                ['exch',"http://www.sgx.com/wps/portal/sgxweb/home/!ut/p/a1/04_Sj9CPykssy0xPLMnMz0vMAfGjzOKNHB1NPAycDSz9wwzMDTxD_Z2Cg8PCDANdjYEKIoEKDHAARwNC-sP1o8BK8JhQkBthkO6oqAgAzDYPQQ!!/dl5/d5/L2dBISEvZ0FBIS9nQSEh/","Singapore Exchange Börse"],
+                                                ['exch',"http://www.tisegroup.com/market/securities/","Listed Securites - International Stock Exchange"],
+                                                ['exch',"http://deutsche-boerse.com/dbg-de/","Gruppe Deutsche Börse"],
+                                                ['exch',"http://www.bseindia.com/","BSE Ltd. (Bombay Stock Exchange) India"],
+                                                ['exch',"https://www.nseindia.com/","NSE - National Stock Exchange of India Ltd."],
+                                                ['exch',"https://www.jse.co.za/","Johannesburg Stock Exchange - JSE"],
+                                                ['exch',"http://www.bolsamadrid.es/esp/aspx/Portada/Portada.aspx","Stock Exchange of Madrid"],
+                                                ['exch',"http://global.krx.co.kr/contents/GLB/03/0308/0308010000/GLB0308010000.jsp","Korea Exchange"],
+                                    ]
+                                    for(var i = 0; i<add.length; i++) {
+                                                var newA = document.createElement('a')
+                                                newA.appendChild(document.createTextNode(add[i][2]))
+                                                newA.href = "javascript:openSite('"+add[i][1]+"','"+add[i][2]+"')"
+                                                document.getElementById(add[i][0]).appendChild(newA)
+                                                document.getElementById(add[i][0]).appendChild(document.createElement('br'))
+                                    }
+                                    var SOS = [
+                                                ["DE","https://icis.corp.delaware.gov/Ecorp/EntitySearch/NameSearch.aspx"],
+                                                ["MA","http://corp.sec.state.ma.us/corpweb/corpsearch/CorpSearch.aspx"],
+                                                ["MD","https://egov.maryland.gov/BusinessExpress/EntitySearch"],
+                                                ["NY","https://appext20.dos.ny.gov/corp_public/CORPSEARCH.ENTITY_SEARCH_ENTRY"],
+                                                ["AL","http://arc-sos.state.al.us/CGI/CORPNAME.MBR/INPUT"],
+                                                ["AK","https://www.commerce.alaska.gov/cbp/main/search/entities"],
+                                                ["AZ","https://apps.azsos.gov/apps/tntp/se.html"],
+                                                ["AR","http://www.sos.arkansas.gov/corps/search_all.php"],
+                                                ["CA","https://businesssearch.sos.ca.gov/"],
+                                                ["CO","http://www.sos.state.co.us/biz/BusinessEntityCriteriaExt.do"],
+                                                ["CT","http://www.concord-sots.ct.gov/CONCORD/online?sn=InquiryServlet&eid=99"],
+                                                ["DC","https://mybusiness.dc.gov/#/quicksearch"],
+                                                ["FL","http://search.sunbiz.org/Inquiry/CorporationSearch/ByName"],
+                                                ["GA","https://ecorp.sos.ga.gov/BusinessSearch"],
+                                                ["HI","https://hbe.ehawaii.gov/documents/search.html;jsessionid=BE978FBCCC15825A8D53F0DDB4CA33AB.liona"],
+                                                ["ID","https://www.accessidaho.org/public/sos/corp/search.html?ScriptForm.startstep=crit"],
+                                                ["IL Corp","http://www.ilsos.gov/corporatellc/"],
+                                                ["IL LP","http://www.ilsos.gov/lprpsearch"],
+                                                ["IN","https://bsd.sos.in.gov/publicbusinesssearch"],
+                                                ["IA","http://sos.iowa.gov/search/business/(S(x1larou0p02wph55lb5zufez))/search.aspx"],
+                                                ["KS","https://www.kansas.gov/bess/flow/main?execution=e2s2"],
+                                                ["KY","https://app.sos.ky.gov/ftsearch/"],
+                                                ["LA","https://coraweb.sos.la.gov/CommercialSearch/CommercialSearch.aspx"],
+                                                ["ME","https://icrs.informe.org/nei-sos-icrs/ICRS?MainPage=x"],
+                                                ["MI","https://cofs.lara.state.mi.us/corpweb/CorpSearch/CorpSearch.aspx"],
+                                                ["MN","https://mblsportal.sos.state.mn.us/Business/Search"],
+                                                ["MS","https://corp.sos.ms.gov/corp/portal/c/page/corpBusinessIdSearch/portal.aspx#clear=1"],
+                                                ["MO","https://bsd.sos.mo.gov/BusinessEntity/BESearch.aspx?SearchType=0"],
+                                                ["MT","https://www.mtsosfilings.gov/mtsos-master/viewInstance/view.html?id=a0a384bbebaac28aa6255190ae994bada9abc3a9c32fb793&_timestamp=15761157136806331"],
+                                                ["NE","https://www.nebraska.gov/sos/corp/corpsearch.cgi?nav=search"],
+                                                ["NV","http://nvsos.gov/sosentitysearch/CorpSearch.aspx"],
+                                                ["NH","https://quickstart.sos.nh.gov/online/BusinessInquire"],
+                                                ["NJ","https://www.njportal.com/DOR/businessrecords/EntityDocs/BusinessStatCopies.aspx"],
+                                                ["NM","https://portal.sos.state.nm.us/BFS/online/CorporationBusinessSearch"],
+                                                ["NC","https://www.sosnc.gov/search/index/corp"],
+                                                ["ND","https://apps.nd.gov/sc/busnsrch/busnSearch.htm"],
+                                                ["OH","https://www5.sos.state.oh.us/ords/f?p=100:1:0:::::"],
+                                                ["OK","https://www.sos.ok.gov/corp/corpInquiryFind.aspx"],
+                                                ["OR","http://egov.sos.state.or.us/br/pkg_web_name_srch_inq.login"],
+                                                ["PA","https://www.corporations.pa.gov/Search/CorpSearch"],
+                                                ["RI","http://ucc.state.ri.us/CorpSearch/CorpSearchInput.asp"],
+                                                ["SC","https://businessfilings.sc.gov/BusinessFiling/Entity/Search"],
+                                                ["SD","https://sosenterprise.sd.gov/BusinessServices/Business/FilingSearch.aspx"],
+                                                ["TN","https://tnbear.tn.gov/ECommerce/FilingSearch.aspx"],
+                                                ["TX","https://mycpa.cpa.state.tx.us/coa/search.do?userType=public"],
+                                                ["UT","https://secure.utah.gov/bes/"],
+                                                ["VT","https://www.vtsosonline.com/online/BusinessInquire/"],
+                                                ["VA","https://sccefile.scc.virginia.gov/Find/Business"],
+                                                ["WA","http://www.sos.wa.gov/corps/corps_search.aspx"],
+                                                ["WV","http://apps.sos.wv.gov/business/corporations/"],
+                                                ["WI","https://www.wdfi.org/apps/CorpSearch/Search.aspx"],
+                                                ["WY","https://wyobiz.wy.gov/business/filingsearch.aspx"]
+                                    ]
+                                    for(var i=0;i<SOS.length;i++) {
+                                                var q = document.createElement("option")
+                                                q.innerHTML = SOS[i][0]
+                                                q.value = "openSite('"+SOS[i][1]+"','"+SOS[i][0]+" - SOS')"
+                                                document.getElementById("SOS").appendChild(q)
+                                    }
+                                    document.getElementById("SOS").onchange = function (e) {
+                                                eval(e.srcElement.selectedOptions[0].value)
+                                    }
+                                    var tabID = 0
+                                    var noteID = 0
+                                    var windowID = 0
+                                    var zInd = 0
+                                    var windows = []
+                                    var unselect = "-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none"
+                                    var languages = [["Simplified Chinese","zh-CN"],["Traditional Chinese","zh-TW"],["Russian","ru"]]
+                                    for(var i = 0; i<languages.length;i++) {
+                                                var e = document.createElement('option')
+                                                e.appendChild(document.createTextNode(languages[i][0]))
+                                                e.value = languages[i][1]
+                                                document.getElementById("tranS").appendChild(e)
+                                    }
+                                    var h2 = document.getElementsByTagName("h2")
+                                    var div = document.getElementsByTagName("div")
+                                    for(var i = 0; i<h2.length; i++) {
+                                                h2[i].innerHTML = h2[i].innerHTML + ' <i id="d'+div[i+2].id+'" class="fa fa-angle-double-down"></i><i id="u'+div[i+2].id+'" style="display:none" class="fa fa-angle-double-up"></i>'
+                                    }
+                                    function toggle(id) {
+                                                var q = document.getElementById(id).style.display
+                                                if(q=="none") {
+                                                            document.getElementById(id).style.display = "inline"
+                                                            document.getElementById('d'+id).style.display = "none"
+                                                            document.getElementById('u'+id).style.display = "inline"
+                                                } else {
+                                                            document.getElementById(id).style.display = "none"
+                                                            document.getElementById('u'+id).style.display = "none"
+                                                            document.getElementById('d'+id).style.display = "inline"
+                                                }
+                                    }
+                                    function searchDUNS() {
+                                                var duns = okChars(document.getElementById("searchD").value,nums)
+                                                openSite("https://www.dandb.com/search/?search_type=duns&is_duns_lookup=false&duns="+duns+"&country=CP&submit=Search+Now","_blank")
+                                                clearSearch("searchD")
+                                    }
+                                    function sw(id) {
+                                                eval("document.getElementById(id).checked = !("+document.getElementById(id).checked+")")
+                                    }
+                                    function okChars(string, charList) {
+                                                var s = "";
+                                                for(var i = 0; i<string.length; i++) {
+                                                            var x = false
+                                                            var c = string.charAt(i)
+                                                            for(var j = 0; j<charList.length; j++) {
+                                                                        if(c==charList[j]) {x=true;break}
+                                                            }
+                                                            if(x) {s=s+c;}
+                                                }
+                                                return s;
+                                    }
+                                    function replacesSpaces(string) {
+                                                return string.replace(" ","%20")
+                                    }
+                                    function searchCompH() {
+                                                openSite("https://www.dandb.com/search/?keyword="+replacesSpaces(document.getElementById("searchC").value)+"&submit=SEARCH&type=coo&source=%2Finternational-credit-reports%2F","_blank")
+                                                clearSearch("searchC")
+                                    }
+                                    function Translate() {
+                                                var list = ["en",languages[document.getElementById("tranS").selectedIndex][1]]
+                                                var which = 0
+                                                if(document.getElementById("Trans").text=="from") {which = -1}
+                                                openSite("https://translate.google.com/#"+list[0-which]+"/"+list[1+which]+"/"+replacesSpaces(document.getElementById("translate").value))
+                                                clearSearch("translate")
+                                    }
+                                    function clearSearch(id) {
+                                                document.getElementById(id).value = "";
+                                    }
+                                    function googleMap() {
+                                                openSite("https://www.google.com/maps/search/"+replacesSpaces(document.getElementById("GugleMip").value))
+                                                clearSearch("GugleMip")
+                                    }
+                                    function download(filename, text) {
+                                                var element = document.createElement('a');
+                                                element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
+                                                element.setAttribute('download', filename);
+                                                element.style.display = 'none';
+                                                document.body.appendChild(element);
+                                                element.click();
+                                                document.body.removeChild(element);
+                                    }
+                                    function switchTrans() {
+                                                if(document.getElementById("Trans").text=="to") {
+                                                            document.getElementById("Trans").text = "from"
+                                                } else {
+                                                            document.getElementById("Trans").text = "to"
+                                                }
+                                    }
+                                    function switchSEC() {
+                                                if(document.getElementById("ssec").text == "company") {document.getElementById("ssec").text = "CIK"} else {document.getElementById("ssec").text = "company"}
+                                    }
+                                    function searchSEC() {
+                                                var s = document.getElementById("SECs").value
+                                                if(document.getElementById("ssec").text == "company") {
+                                                            openSite("https://www.sec.gov/cgi-bin/browse-edgar?company="+replacesSpaces(s)+"&owner=exclude&action=getcompany","SEC Search for '"+s+"'")
+                                                } else {
+                                                            openSite("https://www.sec.gov/cgi-bin/browse-edgar?CIK="+okChars(s,nums)+"&owner=exclude&action=getcompany&Find=Search","SEC Search for '"+s+"'")
+                                                }
+                                                clearSearch('SECs')
+                                    }
+                                    function openSite(url,name) {
+                                                name = name || null
+                                                if(document.getElementById("newTab").checked) {window.open(url,"_blank")} else {
+                                                            newWindow(url,name)
+                                                }
+                                    }
+                                    Element.prototype.remove = function() {
+                                                this.parentElement.removeChild(this);
+                                    }
+                                    NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+                                                for(var i = this.length - 1; i >= 0; i--) {
+                                                            if(this[i] && this[i].parentElement) {
+                                                                        this[i].parentElement.removeChild(this[i]);
+                                                            }
+                                                }
+                                    }
+                                    function refresh(windowID) {
+                                                document.getElementById(windowID+'sub').src = document.getElementById(windowID+'sub').src;
+                                    }
+                                    function renameWindow(id) {
+                                                var e = document.getElementById(id+"name")
+                                                var f = document.getElementById(id)
+                                                var g = document.getElementById(id+"BB")
+                                                var j = window.prompt("Rename?",e.innerHTML)
+                                                if(j!==null && j!=e.innerHTML) {
+                                                            e.innerHTML = j;
+                                                            f.style.minWidth = (8+e.offsetLeft+e.offsetWidth+g.offsetWidth)+"px";
+                                                }
+                                    }
+                                    function loadFileAsNote(){
+                                                var fileToLoad = document.getElementById("lodFile").files[0];
+                                                var fileReader = new FileReader();
+                                                fileReader.onload = function(fileLoadedEvent){
+                                                            var textFromFileLoaded = fileLoadedEvent.target.result;
+                                                            newWindow(textFromFileLoaded,fileToLoad.name.replace(".txt",""))
+                                                            document.getElementById('dimLid').innerHTML = 'Load a text file to a note <input type="file" accept=".txt" id="lodFile" onchange="javascript:loadFileAsNote()">'
+                                                };
+                                                fileReader.readAsText(fileToLoad, "UTF-8");
+                                    }
+                                    function copyLink(id) {
+                                                var textArea = document.createElement('textarea')
+                                                textArea.id = id+"link"
+                                                textArea.value = document.getElementById(id+"sub").src
+                                                textArea.style.position = 'fixed';
+                                                textArea.style.top = 0;
+                                                textArea.style.left = 0;
+                                                textArea.style.width = '2em';
+                                                textArea.style.height = '2em';
+                                                textArea.style.padding = 0;
+                                                textArea.style.border = 'none';
+                                                textArea.style.outline = 'none';
+                                                textArea.style.boxShadow = 'none';
+                                                textArea.style.background = 'transparent';
+                                                document.body.appendChild(textArea)
+                                                var w = document.getElementById(id+"link")
+                                                w.select()
+                                                document.execCommand("Copy")
+                                                w.remove()
+                                    }
+                                    function newWindow(content,name,isBod) {
+                                                name = name || null
+                                                content = content || null
+                                                isBod = isBod || false
+                                                var isLink = false
+                                                if(isBod) {
+                                                            name = "Info Center"
+                                                } else {
+                                                            if(content !== null) {
+                                                                        if(content.substring(0,4)=="http" || content.substring(0,4)=="file") {
+                                                                                    isLink = true
+                                                                                    if(name===null) {name = content}
+                                                                        }
+                                                            }
+                                                            if(name===null) {
+                                                                        var name = window.prompt("Name of notes?","Research Notes "+(noteID+1))
+                                                            }
+                                                }
+                                                if(name!==null) {
+                                                            if(!isBod) {windowID++;}
+                                                            zInd++;
+                                                            var n;
+                                                            var d = document.createElement('div')
+                                                            var dh = document.createElement('div')
+                                                            if(isBod) {
+                                                                        d.id = "window0"
+                                                                        n = document.createElement("div")
+                                                                        document.getElementById("toggleInfo").style.display = "none"
+                                                                        var af = document.getElementById("window0subsub")
+                                                                        n.style = "display:block;overflow:auto;background-color:white;margin:0px;margin-left:2px;width:100%-4px;z-index:"+(9+(zInd*5))
+                                                                        n.appendChild(af)
+                                                            } else {
+                                                                        d.id = "window"+windowID
+                                                                        if(isLink) {
+                                                                                    n = document.createElement('iframe')
+                                                                                    n.src = content
+                                                                                    n.style = "display:block;background-color:white;margin:0px;margin-left:2px;width:100%-4px;z-index:"+(9+(zInd*5))
+                                                                                    n.frameBorder = "0"
+                                                                        } else {
+                                                                                    noteID++;
+                                                                                    n = document.createElement('textarea')
+                                                                                    n.style = "border:none;margin:0px;margin-left:2px;resize:none;white-space:nowrap;z-index:"+(9+(zInd*5))
+                                                                                    if(content!==null) {n.innerHTML = content} else if(document.getElementById("includePreset").checked) {n.innerHTML = "(Research for First Company)\nDUPLICATES..........GMFID........\nLEGAL NAME..........URL..........\nPHYSICAL............URL..........\nREGISTERED..........URL..........\nSTATUS..............URL..........\nINDUSTRY CODES......URL..........\nPARENT..............URL..........\n(Research for Next Company)\nDUPLICATES..........GMFID........\nLEGAL NAME..........URL..........\nPHYSICAL............URL..........\nREGISTERED..........URL..........\nSTATUS..............URL..........\nINDUSTRY CODES......URL..........\nPARENT..............URL..........\n(Research for Next Company)\nDUPLICATES..........GMFID........\nLEGAL NAME..........URL..........\nPHYSICAL............URL..........\nREGISTERED..........URL..........\nSTATUS..............URL..........\nINDUSTRY CODES......URL..........\nPARENT..............URL.........."}
+                                                                        }
+                                                            }
+                                                            n.id = d.id+"sub"
+                                                            dh.id = d.id+"header"
+                                                            dh.style = "font-family:sans-serif;width:100%;padding:4px;background-color:#BBBBBB;z-index:"+(10+(zInd*5))
+                                                            d.style = "position:absolute;overflow:hidden;background-color:#EEEEEE;top:20px;left:20px;height:20%;width:20%;resize:both;min-height:10%;min-width:10%;max-height:96%;max-width:100%;display:inline;z-index:"+(8+(zInd*5))
+                                                            document.getElementById("taskbar").style.zIndex = 11+(5*zInd)
+ 
+                                                            var t = document.createElement("p")
+                                                            t.appendChild(document.createTextNode(name))
+                                                            t.id = d.id+"name"
+                                                            t.style = "display:inline;"+unselect
+                                                            if(!isBod) {
+                                                                        var tt = document.createElement("a")
+                                                                        if(isLink) {
+                                                                                    tt.appendChild(document.createTextNode('\uD83C\uDF0D '))
+                                                                        } else {
+                                                                                    tt.appendChild(document.createTextNode('\uD83D\uDCDD '))
+                                                                        }
+ 
+                                                                        tt.style = "text-decoration:none"
+                                                                        tt.id = d.id+"icon"
+                                                                        tt.href = "javascript:renameWindow('"+d.id+"')"
+                                                                        dh.appendChild(tt)
+                                                            }
+                                                            dh.appendChild(t)
+ 
+                                                            var b = document.createElement("div")
+                                                            b.id = d.id+"BB"
+                                                            b.style = "float:right;display:inline;margin-right:10px;z-index:"+(11+(zInd*5))
+ 
+                                                            var c = document.createElement('a')
+                                                            c.href = "javascript:closeWindow('"+d.id+"')"
+                                                            c.style = "background-color:red;color:white;text-decoration:none;margin-left:4px;padding-left:2px;padding-right:2px"
+                                                            c.appendChild(createBold('X'))
+                                                            var m = document.createElement('a')
+                                                            m.href = "javascript:toggleWindow('"+d.id+"')"
+                                                            m.style = "background-color:blue;color:white;text-decoration:none;margin-left:4px;margin-right:4px;padding-left:2px;padding-right:2px"
+                                                            m.appendChild(createBold('_'))
+                                                            if(!isBod) {
+                                                                        var dl = document.createElement('a')
+                                                                        dl.style = "background-color:blue;color:white;text-decoration:none;margin-left:4px;margin-right:4px;padding-left:2px;padding-right:2px"
+                                                                        if(isLink) {
+                                                                                    dl.href="javascript:refresh('"+d.id+"')"
+                                                                                    dl.appendChild(createBold("\u21BB"))
+                                                                                    var cl = document.createElement("a")
+                                                                                    cl.href = "javascript:copyLink('"+d.id+"')"
+                                                                                    cl.style = "background-color:blue;color:white;text-decoration:none;margin-left:4px;margin-right:4px;padding-left:2px;padding-right:2px"
+                                                                                    cl.appendChild(createBold('\uD83D\uDCCB'))
+                                                                                    cl.title = "Copy Link"
+                                                                                    b.appendChild(cl)
+                                                                        } else {
+                                                                                    dl.title = "Download Text File"
+                                                                                    dl.href = "javascript:DomLod('"+d.id+"')"
+                                                                                    dl.appendChild(createBold('\u2913'))
+                                                                        }
+ 
+                                                                        b.appendChild(dl)
+                                                            }
+                                                            b.appendChild(m)
+                                                            b.appendChild(c)
+                                                            dh.appendChild(b)
+ 
+                                                            var q = document.createElement("div")
+                                                            q.id = d.id+"mask"
+                                                            q.style = "position:absolute;background-color:rgba(0,0,0,0);display:none;z-index:"+(12+(5*zInd))+";"+unselect
+                                                            document.body.appendChild(q)
+ 
+                                                            d.appendChild(dh)
+                                                            d.appendChild(n)
+                                                            document.body.appendChild(d)
+                                                            var ID;
+                                                            if(isBod) {ID = "window0"} else {ID = "window"+windowID}
+                                                            dragElement(document.getElementById(ID))
+                                               
+                                                            var e = document.getElementById(ID)
+                                                            var f = document.getElementById(e.id+"header")
+                                                            var g = document.getElementById(e.id+"sub")
+                                                            var h = document.getElementById(e.id+"BB")
+                                                            var i = document.getElementById(e.id+"name")
+                                                            g.style.height = (e.offsetHeight - f.offsetHeight-12)+"px"
+                                                            g.style.width = (e.offsetWidth-4)+"px"
+                                                            e.style.minWidth = (8+i.offsetLeft+i.offsetWidth+h.offsetWidth)+"px";
+                                                            e.style.minHeight = (20+f.offsetHeight)+"px";
+                                                            document.getElementById(e.id+"mask").onmousedown = changeZ
+                                                            document.getElementById(e.id+"mask").style.width = g.style.width
+                                                            document.getElementById(e.id+"mask").style.height = g.style.height
+                                                            document.getElementById(e.id+"mask").style.left = g.style.left
+                                                            document.getElementById(e.id+"mask").style.top = g.style.top
+                                                            windows.push(ID)
+                                                            unmask(e.id,false)
+                                                }
+                                    }
+                                    function dragElement(elmnt) {
+                                                var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; var ei = 0; var w; var h
+                                                isLeft = false; isRight = false; isTop = false; var was = false
+                                                if (document.getElementById(elmnt.id + "header")) {
+                                                            document.getElementById(elmnt.id+"header").onmousedown = dragMouseDown;
+                                                            elmnt.onmousedown = rsN;
+                                                            ei = document.getElementById(elmnt.id+"header").offsetHeight+elmnt.offsetTop
+                                                } else {
+                                                            elmnt.onmousedown = dragMouseDown;
+                                                }
+                                                function rsN(e) {
+                                                            e = e || window.event;
+                                                            document.onmouseup = closeDragElement;
+                                                            var tttt = e.pageX-document.getElementById(elmnt.id+"BB").offsetLeft
+                                                            if(e.clientY < ei) {
+                                                                        if(was) {
+                                                                                    if(!(tttt>0 && tttt<document.getElementById(elmnt.id+"BB").offsetWidth)) {
+                                                                                                elmnt.style.width = w
+                                                                                                elmnt.style.left = (Math.max(Math.min(e.pageX-Math.round(elmnt.offsetWidth/2),window.innerWidth-elmnt.offsetWidth),0))+"px"
+                                                                                                elmnt.style.height = h
+                                                                                                resizeWindow()
+                                                                                    }
+                                                                        } else {
+                                                                                    w = elmnt.style.width
+                                                                                    h = elmnt.style.height
+                                                                        }
+                                                                        unmask(elmnt.id,true)
+                                                                        document.getElementById("backmask").style.display = "inline"
+                                                                        dragMouseDown(e)
+                                                            } else {
+                                                                        document.onmousemove = resizeWindow;
+                                                            }
+                                                }
+                                                function resizeWindow(e) {
+                                                            e = e || window.event;
+                                                            var f = document.getElementById(elmnt.id+"header")
+                                                            var g = document.getElementById(elmnt.id+"sub")
+                                                            var h = document.getElementById(elmnt.id+"BB")
+                                                            var j = document.getElementById(elmnt.id+"mask")
+                                                            var i = 0
+                                                            elmnt.style.width = (Math.min(window.innerWidth-elmnt.offsetLeft,elmnt.offsetWidth))+"px"
+                                                            if(h.offsetTop!=(f.offsetTop+4)) {i=h.offsetTop+h.offsetHeight} else {i = f.offsetHeight}
+                                                            g.style.height = (elmnt.offsetHeight - i-12)+"px"
+                                                            g.style.width = (elmnt.offsetWidth-4)+"px"
+                                                            document.getElementById(elmnt.id+"mask").style.height = g.style.height;
+                                                            document.getElementById(elmnt.id+"mask").style.width = g.style.width;
+                                                }
+                                                function dragMouseDown(e) {
+                                                            e = e || window.event;
+                                                            pos3 = e.clientX;
+                                                            pos4 = e.clientY;
+                                                            pos2 = elmnt.offsetTop - e.clientY;
+                                                            pos1 = elmnt.offsetLeft - e.clientX;
+                                                            document.onmouseup = closeDragElement;
+                                                            document.onmousemove = elementDrag;
+                                                }
+                                                function elementDrag(e) {
+                                                            e = e || window.event;
+                                                            pos3 = e.clientX;
+                                                            pos4 = e.clientY;
+                                                            var pos5 = e.clientX+pos1
+                                                            var pos6 = e.clientY+pos2
+                                                            elmnt.style.top = (100*Math.max(Math.min(pos6,(.96*window.innerHeight)-document.getElementById(elmnt.id+"header").offsetHeight),0)/(window.innerHeight))+"%"
+                                                            elmnt.style.left = (100*Math.max(Math.min(pos5,(window.innerWidth)-document.getElementById(elmnt.id).offsetWidth),0)/(window.innerWidth))+"%"
+                                                            document.getElementById(elmnt.id+"mask").style.left = (100*(document.getElementById(elmnt.id+"sub").offsetLeft+elmnt.offsetLeft)/window.innerWidth)+"%"
+                                                            document.getElementById(elmnt.id+"mask").style.top = (100*(document.getElementById(elmnt.id+"sub").offsetTop+elmnt.offsetTop)/window.innerHeight)+"%"
+                                                            if(e.clientY<10) {isTop = true} else {isTop = false}
+                                                            if(e.clientX<10) {isLeft = true} else {isLeft = false}
+                                                            if(e.clientX>window.innerWidth-10) {isRight = true} else {isRight = false}
+                                                            if(isLeft || isRight) {
+                                                                        document.getElementById('prevmask').style.width = "50%"
+                                                                        if(isLeft) {document.getElementById('prevmask').style.left = "0"} else {document.getElementById('prevmask').style.left = "50%"}
+                                                                        if(isTop) {
+                                                                                    document.getElementById('prevmask').style.height = "48%"
+                                                                        } else {
+                                                                                    document.getElementById('prevmask').style.height = "96%"
+                                                                        }
+                                                            } else if(isTop) {
+                                                                        document.getElementById('prevmask').style.width = "100%"
+                                                                        document.getElementById('prevmask').style.height = "96%"
+                                                                        document.getElementById('prevmask').style.left = "0"
+                                                                        document.getElementById('prevmask').style.top = "0"
+                                                            }
+                                                            if(isTop || isRight || isLeft) {
+                                                                        document.getElementById('prevmask').style.display = "inline"
+                                                            } else {
+                                                                        document.getElementById('prevmask').style.display = "none"
+                                                            }
+                                                }
+                                                function closeDragElement() {
+                                                            document.onmouseup = null;
+                                                            document.onmousemove = null;
+                                                            ei = document.getElementById(elmnt.id+"header").offsetHeight+elmnt.offsetTop
+                                                            document.getElementById(elmnt.id+"mask").style.display = "none"
+                                                            document.getElementById("backmask").style.display = "none"
+                                                            document.getElementById("prevmask").style.display = "none"
+                                                            was = false
+                                                            if(isLeft || isRight) {
+                                                                        was = true
+                                                                        elmnt.style.width = "50%"
+                                                                        elmnt.style.top = "0"
+                                                                        if(isLeft) {elmnt.style.left = "0"} else {elmnt.style.left = "50%"}
+                                                                        if(isTop) {
+                                                                                    elmnt.style.height = "48%"
+                                                                        } else {
+                                                                                    elmnt.style.height = "96%"
+                                                                        }
+                                                            } else if(isTop) {
+                                                                        was = true
+                                                                        elmnt.style.width = "100%"
+                                                                        elmnt.style.height = "96%"
+                                                                        elmnt.style.left = "0"
+                                                                        elmnt.style.top = "0"
+                                                            }
+                                                            document.getElementById(elmnt.id+"mask").style.left = (100*(document.getElementById(elmnt.id+"sub").offsetLeft+elmnt.offsetLeft)/window.innerWidth)+"%"
+                                                            document.getElementById(elmnt.id+"mask").style.top = (100*(document.getElementById(elmnt.id+"sub").offsetTop+elmnt.offsetTop)/window.innerHeight)+"%"
+                                                            resizeWindow()
+                                                            isTop = false;
+                                                            isLeft = false;
+                                                            isRight = false;
+                                                }
+                                    }
+                                    function createBold(text) {
+                                                var bold = document.createElement("b")
+                                                bold.appendChild(document.createTextNode(text))
+                                                return bold;
+                                    }
+                                    function closeWindow(id) {
+                                                if(id=='window0') {
+                                                            document.getElementById("boddo").appendChild(document.getElementById("window0subsub"))
+                                                            document.getElementById("toggleInfo").style.display = "inline"
+                                                }
+                                                windows.splice(windows.indexOf(id),1)
+                                                document.getElementById(id).remove()
+                                                if(document.getElementById(id+"TB")!==null) {document.getElementById(id+"TB").remove()}
+                                    }
+                                    function toggleWindow(id) {
+                                                var a = document.getElementById(id).style.display;/*
+                                                var b = document.getElementById(id+"TB").style.display;
+                                                document.getElementById(id).style.display = b;
+                                                document.getElementById(id+"TB").style.display = a;*/
+                                                if(a=="none") {
+                                                            document.getElementById(id+"TB").remove()
+                                                            document.getElementById(id).style.display = "inline";
+                                                            document.getElementById(id+"mask").style.display = "inline";
+                                                            unmask(id,false)
+                                                } else {
+                                                            document.getElementById(id).style.display = "none";
+                                                            document.getElementById(id+"mask").style.display = "none";
+                                                            var tb = document.createElement('div')
+                                                            tb.id = id+"TB"
+                                                            var tbn = document.createElement('a')
+                                                            var tbb = document.createElement('a')
+                                                            tb.style = "background-color:#AAAAAA;padding:4px;float:left;display:inline;margin-left:4px;margin-right:4px;font-family:sans-serif"
+                                                            var name = document.getElementById(id+"name").innerHTML
+                                                            if(name.length>25) {
+                                                                        name = name.substring(0,22)+"..."
+                                                            }
+                                                            if(document.getElementById(id+"icon")!==null) {
+                                                                        name = document.getElementById(id+"icon").innerHTML + name
+                                                            }
+                                                            tbn.appendChild(document.createTextNode(name))
+                                                            tbb.style = "color:white;background-color:red;float:right;padding:2px;text-decoration:none;"+unselect
+                                                            tbb.appendChild(createBold("X"))
+                                                            tbn.style = "color:black;text-decoration:none;margin:5px"
+                                                            tbb.href = "javascript:closeWindow('"+id+"')"
+                                                            tbn.href = "javascript:toggleWindow('"+id+"')"
+                                                            tb.appendChild(tbn)
+                                                            tb.appendChild(tbb)
+                                                            document.getElementById('taskbar').appendChild(tb)
+                                                }
+                                    }
+                                    function DomLod(id) {
+                                                var name = window.prompt("Name the text file",document.getElementById(id+"name").innerHTML)
+                                                if(name !== null){
+                                                            download(name+".txt",document.getElementById(id+"sub").value.replace(/\n/g,"\r\n"))
+                                                }
+                                    }
+                                    function changeZ(e) {
+                                                var ee = e.target.id
+                                                ee = ee.substring(0,ee.length-4)
+                                                unmask(ee,false)
+                                    }
+                                    function unmask(id,isDrag) {
+                                                zInd++;
+                                                document.getElementById(id).style.zIndex = 8+(zInd*5)
+                                                document.getElementById(id+"sub").style.zIndex = 9+(zInd*5)
+                                                document.getElementById(id+"header").style.zIndex = 10+(zInd*5)
+                                                document.getElementById(id+"BB").style.zIndex = 11+(zInd*5)
+                                                document.getElementById(id+"mask").style.zIndex = 12+(zInd*5)
+                                                document.getElementById("taskbar").style.zIndex = 13+(zInd*5)
+                                                document.getElementById("prevmask").style.zIndex = 14+(zInd*5)
+                                                for(var eeee = 0; eeee<windows.length; eeee++) {
+                                                            if(document.getElementById(windows[eeee]).style.display == "inline") {
+                                                                        document.getElementById(windows[eeee]+"mask").style.display = "inline";
+                                                            } else {
+                                                                        document.getElementById(windows[eeee]+"mask").style.display = "none";
+                                                            }
+                                                }
+                                                if(!isDrag) {
+                                                            document.getElementById(id+"mask").style.display = "none";
+                                                }
+                                    }
+                                    window.onresize = function () {
+                                                for(var qwer = 0; qwer<windows.length; qwer++) {
+                                                            var d = windows[qwer]
+                                                            var e = document.getElementById(d)
+                                                            var f = document.getElementById(d+"header")
+                                                            var g = document.getElementById(d+"sub")
+                                                            var h = document.getElementById(d+"BB")
+                                                            var j = document.getElementById(d+"mask")
+                                                            var i = 0
+                                                            if(h.offsetTop!=(f.offsetTop+4)) {i=h.offsetTop+h.offsetHeight} else {i = f.offsetHeight}
+                                                            g.style.height = (e.offsetHeight - i-12)+"px"
+                                                            g.style.width = (e.offsetWidth-4)+"px"
+                                                            document.getElementById(d+"mask").style.height = document.getElementById(d+"sub").style.height;
+                                                            document.getElementById(d+"mask").style.width = document.getElementById(d+"sub").style.width;
+                                                }
+                                    }
+                        </script>
+            </body>
+</html>
